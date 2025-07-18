@@ -24,6 +24,7 @@ from typing import (
 )
 
 import jinja2
+import jinja2.ext as jinja2_ext
 from jinja2.sandbox import ImmutableSandboxedEnvironment
 
 import numpy as np
