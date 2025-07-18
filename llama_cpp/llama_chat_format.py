@@ -5,6 +5,7 @@ import sys
 import json
 import ctypes
 import dataclasses
+import datetime
 import random
 import string
 
@@ -208,11 +209,20 @@ class Jinja2ChatFormatter(ChatFormatter):
             set(stop_token_ids) if stop_token_ids is not None else None
         )
 
-        self._environment = ImmutableSandboxedEnvironment(
-            loader=jinja2.BaseLoader(),
+        # self._environment = ImmutableSandboxedEnvironment(
+        #     loader=jinja2.BaseLoader(),
+        #     trim_blocks=True,
+        #     lstrip_blocks=True,
+        # ).from_string(self.template)
+
+        environment = ImmutableSandboxedEnvironment(
             trim_blocks=True,
             lstrip_blocks=True,
-        ).from_string(self.template)
+            extensions=[jinja2_ext.loopcontrols],
+        )
+        environment.filters["tojson"] = lambda x, indent=None, separators=None, sort_keys=False: json.dumps(x, indent=indent, separators=separators, sort_keys=sort_keys, ensure_ascii=False)
+        environment.globals["strftime_now"] = lambda format: datetime.datetime.now().strftime(format)
+        self._environment = environment.from_string(self.template)
 
     def __call__(
         self,
